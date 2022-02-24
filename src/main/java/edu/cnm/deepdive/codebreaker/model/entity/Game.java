@@ -1,5 +1,6 @@
 package edu.cnm.deepdive.codebreaker.model.entity;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -16,10 +17,11 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.PrePersist;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,18 +29,14 @@ import org.springframework.lang.NonNull;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
-@Table(
-    name = "user_profile"
-)
 @JsonInclude(Include.NON_NULL)
-@JsonPropertyOrder({"id", "created", "displayName", "avatar", "incognito"})
-
-public class User {
+@JsonPropertyOrder({"id", "created", "pool", "length", "solved", "text"})
+public class Game {
 
   @NonNull
   @Id
   @GeneratedValue
-  @Column(name = "user_profile_id", updatable = false, nullable = false, columnDefinition = "UUID")
+  @Column(name = "game_id", updatable = false, nullable = false, columnDefinition = "UUID")
   @JsonIgnore
   private UUID id;
 
@@ -55,31 +53,33 @@ public class User {
   private Date created;
 
   @NonNull
-  @Column(updatable = false, nullable = false, unique = true, length = 30)
+  @Column(nullable = false, updatable = false, length = 255)
+
+  private String pool;
+
+  @Column(nullable = false, updatable = false)
   @JsonIgnore
-  private String oauthKey;
+  private int poolSize;
+
+  @Column(nullable = false, updatable = false)
+  private int length;
 
   @NonNull
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(nullable = false)
+  @Column(name = "game_text", nullable = false, updatable = false, length = 20)
   @JsonIgnore
-  private Date connected;
+  private String text;
 
   @NonNull
-  @Column(nullable = false, unique = true)
-  private String displayName;
-
-  @Column(length = 255)
-  private String avatar;
-
-  @Column(nullable = false)
-  private Boolean incognito;
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false, updatable = false)
+  @JsonIgnore
+  private User user;
 
   @NonNull
-  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,
+  @OneToMany(mappedBy = "game", fetch = FetchType.EAGER,
       cascade = CascadeType.ALL, orphanRemoval = true)
-  @OrderBy("created DESC")
-  private final List<Game> games = new LinkedList<>();
+  @OrderBy("created ASC")
+  private final List<Guess> guesses = new LinkedList<>();
 
   @NonNull
   public UUID getId() {
@@ -96,57 +96,69 @@ public class User {
     return created;
   }
 
-  @NonNull
-  public String getOauthKey() {
-    return oauthKey;
-  }
-
-  public void setOauthKey(@NonNull String oauthKey) {
-    this.oauthKey = oauthKey;
+  public int getPoolSize() {
+    return poolSize;
   }
 
   @NonNull
-  public Date getConnected() {
-    return connected;
+  public String getPool() {
+    return pool;
   }
 
-  public void setConnected(@NonNull Date connected) {
-    this.connected = connected;
+  public void setPool(@NonNull String pool) {
+    this.pool = pool;
   }
 
-  @NonNull
-  public String getDisplayName() {
-    return displayName;
+  public int getLength() {
+    return length;
   }
 
-  public void setDisplayName(@NonNull String displayName) {
-    this.displayName = displayName;
-  }
-
-  public String getAvatar() {
-    return avatar;
-  }
-
-  public void setAvatar(String avatar) {
-    this.avatar = avatar;
-  }
-
-  public Boolean getIncognito() {
-    return incognito;
-  }
-
-  public void setIncognito(Boolean incognito) {
-    this.incognito = incognito;
+  public void setLength(int length) {
+    this.length = length;
   }
 
   @NonNull
-  public List<Game> getGames() {
-    return games;
+  public String getText() {
+    return text;
+  }
+
+  public void setText(@NonNull String text) {
+    this.text = text;
+  }
+
+  @NonNull
+  public User getUser() {
+    return user;
+  }
+
+  public void setUser(@NonNull User user) {
+    this.user = user;
+  }
+
+
+  @NonNull
+  public List<Guess> getGuesses() {
+    return guesses;
+  }
+
+  public boolean isSolved() {
+
+    return guesses
+        .stream()
+        .anyMatch(Guess::isSolution);
+
+  }
+
+  @JsonProperty("text")
+  public String getSolution() {
+    return isSolved() ? text : null;
   }
 
   @PrePersist
-  private void generateExternalKey() {
+  private void generateAdditionalFields() {
     externalKey = UUID.randomUUID();
+    poolSize = (int) pool
+        .codePoints()
+        .count();
   }
-
 }
