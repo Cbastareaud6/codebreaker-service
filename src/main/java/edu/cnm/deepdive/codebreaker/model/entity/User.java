@@ -73,12 +73,13 @@ public class User {
   private String avatar;
 
   @Column(nullable = false)
-  private Boolean incognito;
+  private boolean incognito;
 
   @NonNull
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,
       cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("created DESC")
+  @JsonIgnore
   private final List<Game> games = new LinkedList<>();
 
   @NonNull
@@ -131,11 +132,11 @@ public class User {
     this.avatar = avatar;
   }
 
-  public Boolean getIncognito() {
+  public boolean isIncognito() {
     return incognito;
   }
 
-  public void setIncognito(Boolean incognito) {
+  public void setIncognito(boolean incognito) {
     this.incognito = incognito;
   }
 

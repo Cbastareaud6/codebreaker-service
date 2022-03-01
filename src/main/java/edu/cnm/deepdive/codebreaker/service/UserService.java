@@ -44,4 +44,19 @@ public class UserService {
         .getPrincipal();
 
   }
+
+  public User updateUser(User received){
+    return  repository
+        .findById(getCurrentUser().getId())
+        .map((user) -> {
+          //noinspection ConstantConditions
+          if (received.getDisplayName()!= null){
+            user.setDisplayName(received.getDisplayName());
+          }
+          user.setIncognito(received.isIncognito());
+          return  repository.save(user);
+        } )
+        .orElseThrow();
+
+  }
 }
