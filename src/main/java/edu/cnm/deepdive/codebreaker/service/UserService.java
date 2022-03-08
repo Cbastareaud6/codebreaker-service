@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
+public class UserService implements AbstractUserService {
 
   private final UserRepository repository;
 
@@ -20,6 +20,7 @@ public class UserService {
     this.repository = repository;
   }
 
+  @Override
   public User getOrCreate(String oauthKey, String displayName) {
     return repository
         .findByOauthKey(oauthKey)
@@ -37,6 +38,7 @@ public class UserService {
 
   }
 
+  @Override
   public User getCurrentUser() {
     return (User) SecurityContextHolder
         .getContext()
@@ -45,6 +47,7 @@ public class UserService {
 
   }
 
+  @Override
   public User updateUser(User received){
     return  repository
         .findById(getCurrentUser().getId())

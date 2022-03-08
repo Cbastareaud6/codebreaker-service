@@ -3,22 +3,20 @@ package edu.cnm.deepdive.codebreaker.service;
 import edu.cnm.deepdive.codebreaker.model.entity.User;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserConverter implements Converter<Jwt, UsernamePasswordAuthenticationToken> {
 
-  private final UserService service;
+  private final AbstractUserService service;
 
   @Autowired
-  public UserConverter(UserService service) {
+  public UserConverter(AbstractUserService service) {
     this.service = service;
   }
 
