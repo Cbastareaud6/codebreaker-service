@@ -30,5 +30,7 @@ public class UserController {
   @PutMapping(value = "/me", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public  User put(@RequestBody User user) {
    return service.updateUser(user);
+
   }
+
 }

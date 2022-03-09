@@ -30,6 +30,7 @@ public class GameService implements AbstractGameService {
     game.setPoolSize(codePoints.length);
     // todo Write pool length & secret
     // todo cave game using repo and return result
+   game.setUser(user);
 
     return repository.save(game);
   }
