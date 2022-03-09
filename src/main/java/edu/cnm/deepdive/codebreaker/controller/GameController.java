@@ -6,6 +6,7 @@ import edu.cnm.deepdive.codebreaker.service.AbstractGameService;
 import edu.cnm.deepdive.codebreaker.service.AbstractUserService;
 import java.net.URI;
 import java.util.UUID;
+import javax.validation.Valid;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class GameController {
 
   @PostMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Game> post(@RequestBody Game game) {
+  public ResponseEntity<Game> post(@Valid @RequestBody Game game) {
     Game created = gameService.startGame(game, userService.getCurrentUser());
     URI location = WebMvcLinkBuilder
         .linkTo(
