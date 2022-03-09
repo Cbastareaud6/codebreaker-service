@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/games/{gameId/guesses")
+@RequestMapping("/games/{gameId}/guesses")
 public class GuessController {
 
   private final AbstractGuessService guessService;
@@ -30,9 +30,11 @@ public class GuessController {
     this.userService = userService;
   }
 
-  @GetMapping(value = "/{guessID}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{guessId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Guess get(@PathVariable UUID gameId, @PathVariable UUID guessId) {
-    return guessService.get(guessId, gameId, userService.getCurrentUser());
+    return guessService
+        .get(guessId, gameId, userService.getCurrentUser())
+        .orElseThrow();
   }
 
   @PostMapping(
@@ -48,6 +50,13 @@ public class GuessController {
     return ResponseEntity
         .created(location)
         .body(created);
+
+  }
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  Iterable<Guess>  get (@PathVariable UUID gameId) {
+    return guessService
+        .get(gameId, userService.getCurrentUser())
+        .orElseThrow();
 
   }
 }

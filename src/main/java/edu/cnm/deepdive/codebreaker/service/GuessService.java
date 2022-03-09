@@ -4,6 +4,8 @@ import edu.cnm.deepdive.codebreaker.model.dao.GuessRepository;
 import edu.cnm.deepdive.codebreaker.model.entity.Game;
 import edu.cnm.deepdive.codebreaker.model.entity.Guess;
 import edu.cnm.deepdive.codebreaker.model.entity.User;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -32,15 +34,7 @@ public class GuessService implements
     //TODO RETURN VALUE RETURNED WHEN SAVING GUESS TO DATABASE
     return gameService
         .get(gameId, user)
-        .map((game) -> {
-          return validate(guess, game);
-        })
-        .map((g) -> {
-          // TODO COMPUTE NUMBER OF EXACT MATCHES AND NEAR MATCHES
-          // TODO SET FIELDS OF GUESS WITH COMPUTATION RESULT
-
-          return g;
-        })
+        .map((game) -> evaluate( validate(guess, game), game))
         .map(guessRepository::save)
         .orElseThrow();
 
@@ -48,6 +42,9 @@ public class GuessService implements
   }
 
   private Guess validate(Guess guess, Game game) {
+    if (game.isSolved()) {
+      throw new IllegalStateException();
+    }
     int[] codePoints = codePoints(guess.getText());
     if (codePoints.length != game.getLength()) {
       throw new IllegalArgumentException();
@@ -56,6 +53,38 @@ public class GuessService implements
       throw new IllegalArgumentException();
     }
 
+    return guess;
+  }
+
+  private  Guess evaluate(Guess guess, Game game) {
+    int exactMatches = 0;
+    int[] secretCodePoints = codePoints(game.getText());
+    int[] guessCodePoints = codePoints(guess.getText());
+    Map<Integer, Integer> secretOccurences = new HashMap<>();
+    Map<Integer, Integer> guessOccurences = new HashMap<>();
+
+    for (int i = 0; i < secretCodePoints.length; i++) {
+     int secretCodePoint = secretCodePoints[i];
+     int guessCodePoint = guessCodePoints[i];
+      if (secretCodePoint == guessCodePoint ){
+        exactMatches ++;
+      }else{
+        secretOccurences.put(secretCodePoint,
+            1 + secretOccurences.getOrDefault(secretCodePoint, 0));
+        guessOccurences.put(guessCodePoint,
+            1 + guessOccurences.getOrDefault(guessCodePoint, 0));
+
+      }
+
+    }
+    int nearMatches = secretOccurences
+        .entrySet()
+        .stream()
+        .mapToInt((entry)-> Math.min(entry.getValue(), guessOccurences.getOrDefault(entry.getKey(),0)))
+        .sum();
+    guess.setExactMatches(exactMatches);
+    guess.setNearMatches(nearMatches);
+    guess.setGame(game);
     return guess;
   }
 
