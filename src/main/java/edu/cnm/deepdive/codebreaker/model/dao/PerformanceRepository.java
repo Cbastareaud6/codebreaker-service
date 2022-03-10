@@ -7,12 +7,36 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 
 public interface PerformanceRepository extends Repository<Game, UUID> {
+  @Query(value = "SELECT "
+      + "MIN(ga.created) as created, "
+      + "COUNT(*) AS guessCount, "
+      + "DATEDIFF(SECOND, MIN(gu.created), MAX(gu.created)) AS duration, "
+      + "MAX(gu.exact_matches) AS matches, "
+      + "MAX(ga.length) AS code_length "
+      + "FROM game AS ga "
+      + "JOIN guess AS gu ON gu.game_id = ga.game_id "
+      + "WHERE ga.pool_size = :poolSize AND ga.length = :codeLength "
+      + "GROUP BY ga.game_id "
+      + "HAVING matches = code_length "
+      + "ORDER BY duration ASC, guessCount ASC "
+      + "LIMIT :count", nativeQuery = true)
+  Iterable<Performance> getRankingsByTime(int poolSize,int codeLength, int count);
 
-  @Query("SELECT ga.created, "
-      + "COUNT(gu) AS guessCount,"
-      + "MAX(gu.created)- MIN(gu.created) AS duration "
-      + " FROM Game AS ga "
-      + "JOIN ga.guesses AS gu "
-      + " WHERE ga.poolSize = :poolSize AND ga.length = :codeLength " )
-  Iterable<Performance> getRankings(int poolSize,int codeLength);
+  @Query(value = "SELECT "
+      + "MIN(ga.created) as created, "
+      + "COUNT(*) AS guessCount, "
+      + "DATEDIFF(SECOND, MIN(gu.created), MAX(gu.created)) AS duration, "
+      + "MAX(gu.exact_matches) AS matches, "
+      + "MAX(ga.length) AS code_length "
+      + "FROM game AS ga "
+      + "JOIN guess AS gu ON gu.game_id = ga.game_id "
+      + "WHERE ga.pool_size = :poolSize AND ga.length = :codeLength "
+      + "GROUP BY ga.game_id "
+      + "HAVING matches = code_length "
+      + "ORDER BY  guessCount ASC, duration ASC "
+      + "LIMIT :count",  nativeQuery = true)
+  Iterable<Performance> getRankingsByGuesses(int poolSize,int codeLength, int count);
+
+
+
 }
