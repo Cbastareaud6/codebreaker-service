@@ -1,9 +1,10 @@
 package edu.cnm.deepdive.codebreaker.controller;
 
 
+import com.fasterxml.jackson.annotation.JsonView;
 import edu.cnm.deepdive.codebreaker.model.entity.User;
+import edu.cnm.deepdive.codebreaker.view.UserView;
 import edu.cnm.deepdive.codebreaker.service.AbstractUserService;
-import edu.cnm.deepdive.codebreaker.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,9 @@ public class UserController {
   public UserController(AbstractUserService service) {
     this.service = service;
   }
+
   @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+  @JsonView(UserView.Private.class)
   public User get() {
     return service.getCurrentUser();
   }
