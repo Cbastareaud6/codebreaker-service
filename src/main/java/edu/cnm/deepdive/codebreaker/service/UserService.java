@@ -4,6 +4,8 @@ package edu.cnm.deepdive.codebreaker.service;
 import edu.cnm.deepdive.codebreaker.model.dao.UserRepository;
 import edu.cnm.deepdive.codebreaker.model.entity.User;
 import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -60,5 +62,13 @@ public class UserService implements AbstractUserService {
         } )
         .orElseThrow();
 
+  }
+
+  @Override
+  public Optional<User> get(UUID externalKey, User requester) {
+    return repository
+        .findByExternalKey(externalKey)
+        .map((user) ->
+            (! user.isIncognito() || user.getId().equals(requester.getId())) ?  user : null );
   }
 }
